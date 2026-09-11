@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#07080d">
+<title>VEditPro - Video Editor</title>
+<style>
+:root{--bg:#07080d;--panel:#0f1119;--panel2:#151925;--line:#262b3b;--text:#f6f7fb;--muted:#8991a6;--a:#6d5ce7;--b:#00c7ff;--danger:#ff5573}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 10% 0,#211c50 0,transparent 28%),radial-gradient(circle at 100% 10%,#073b51 0,transparent 25%),var(--bg);color:var(--text);font-family:Inter,system-ui,Arial,sans-serif}
+header{height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;border-bottom:1px solid var(--line);background:#080a10e8;backdrop-filter:blur(16px);position:sticky;top:0;z-index:10}
+.brand{display:flex;align-items:center;gap:10px}.logo{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-weight:900;font-size:19px;background:linear-gradient(135deg,#00c7ff,#6959e8,#ff25d5);box-shadow:0 0 25px #6959e855}.brand b{font-size:18px}.brand small{display:block;color:var(--muted);font-size:9px;letter-spacing:2px}
+button,select,input{font:inherit}button{cursor:pointer;color:var(--text)}.btn{border:1px solid var(--line);background:var(--panel2);border-radius:10px;padding:10px 14px;font-weight:700}.primary{border:0;background:linear-gradient(135deg,var(--a),#a04cff)}.export{border:0;background:linear-gradient(135deg,#00b894,#00cec9);color:#03120f}
+.app{display:grid;grid-template-columns:230px minmax(0,1fr) 280px;min-height:calc(100vh - 64px)}aside{padding:15px;background:#0d0f17aa}.left{border-right:1px solid var(--line)}.right{border-left:1px solid var(--line)}main{padding:16px;min-width:0}.title{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);font-weight:800;margin:4px 0 10px}
+.upload{border:1px dashed #3b4255;border-radius:13px;padding:20px 10px;text-align:center;background:#ffffff04;cursor:pointer}.upload strong{display:block;margin:7px 0 4px}.upload span{font-size:11px;color:var(--muted)}#videoFile,#audioFile{display:none}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:13px;margin-bottom:11px}.card h3{font-size:12px;margin:0 0 12px}.meta{font-size:11px;color:var(--muted);line-height:1.8}
+.preview{position:relative;background:#020306;border:1px solid var(--line);border-radius:16px;overflow:hidden;aspect-ratio:16/9;display:grid;place-items:center}.preview video{width:100%;height:100%;object-fit:contain}.empty{text-align:center;color:var(--muted)}.empty div{font-size:45px}.empty p{font-size:12px}.overlay{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-weight:800;text-align:center;white-space:pre-wrap;max-width:90%;text-shadow:0 3px 8px #000;pointer-events:none}
+.controls{background:#0b0d13;border:1px solid var(--line);border-top:0;border-radius:0 0 14px 14px;padding:11px}.row{display:flex;align-items:center;gap:8px}.time{width:42px;color:var(--muted);font-size:10px;text-align:center}.grow{flex:1}input[type=range]{width:100%;accent-color:var(--a)}.play{width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:var(--panel2)}
+.timeline{margin-top:14px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:13px}.track{height:62px;position:relative;background:repeating-linear-gradient(90deg,#ffffff08 0,#ffffff08 1px,transparent 1px,transparent 45px),#090b11;border:1px solid var(--line);border-radius:9px;overflow:hidden}.selection{position:absolute;top:6px;bottom:6px;left:0;width:100%;border:2px solid var(--a);border-radius:7px}.handle{position:absolute;top:-2px;bottom:-2px;width:13px;background:var(--a);border-radius:4px}.lh{left:-7px}.rh{right:-7px}.head{position:absolute;top:0;bottom:0;width:2px;background:white;box-shadow:0 0 12px white;left:0}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}.filter{padding:9px 4px;border:1px solid var(--line);border-radius:9px;background:#11141d;font-size:10px}.filter.active{border-color:var(--a);background:#6d5ce722}
+label.small{display:block;color:var(--muted);font-size:10px;margin:10px 0 5px}input[type=text],select{width:100%;height:39px;background:#090b11;color:var(--text);border:1px solid var(--line);border-radius:9px;padding:0 9px;outline:0}.actions{display:grid;grid-template-columns:1fr 1fr;gap:7px}.muted{color:var(--muted);font-size:10px}
+.modal{position:fixed;inset:0;background:#000b;backdrop-filter:blur(8px);display:none;place-items:center;z-index:30}.modal.show{display:grid}.modalbox{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:22px;width:min(380px,90%);text-align:center}.spinner{width:42px;height:42px;border:4px solid #292e3d;border-top-color:var(--a);border-radius:50%;animation:s 1s linear infinite;margin:auto auto 12px}@keyframes s{to{transform:rotate(360deg)}}
+@media(max-width:1050px){.app{grid-template-columns:190px minmax(0,1fr)}.right{grid-column:1/-1;border-left:0;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.right .card{margin:0}}
+@media(max-width:700px){header{height:58px}.app{display:block}.left{border:0;border-bottom:1px solid var(--line)}.left .card{display:none}aside{padding:11px}.right{display:block}.right .card{margin-bottom:10px}main{padding:10px}.preview{aspect-ratio:16/10}.brand small{display:none}.header-extra{display:none}.timeline{padding:10px}}
+</style>
+</head>
+<body>
+<header>
+<div class="brand"><div class="logo">▶</div><div><b>VEditPro</b><small>EDIT • CREATE • SHARE</small></div></div>
+<div class="row"><button class="btn header-extra" id="reset">Reset</button><button class="btn export" id="topExport">⬇ Export</button></div>
+</header>
+
+<div class="app">
+<aside class="left">
+<div class="title">Media</div>
+<label class="upload" for="videoFile"><div style="font-size:30px">🎬</div><strong>Import Video</strong><span>MP4 • WebM • MOV</span></label>
+<input id="videoFile" type="file" accept="video/*">
+<div class="card" style="margin-top:12px"><h3>Audio</h3><label class="upload" style="padding:12px" for="audioFile">🎵 Add Music<input id="audioFile" type="file" accept="audio/*"></label><div class="muted" id="audioName" style="margin-top:7px">No audio selected</div></div>
+<div class="card"><h3>Video Info</h3><div class="meta" id="info">Import a video to see details.</div></div>
+</aside>
+
+<main>
+<div class="preview" id="preview">
+<div class="empty" id="empty"><div>🎥</div><p>Import a video to start editing</p></div>
+<video id="video" playsinline style="display:none"></video>
+<div class="overlay" id="overlay" style="display:none">Your Text</div>
+</div>
+<div class="controls">
+<div class="row"><span class="time" id="now">00:00</span><input id="progress" class="grow" type="range" min="0" max="100" value="0" step=".01"><span class="time" id="total">00:00</span></div>
+<div class="row" style="margin-top:9px"><button class="play" id="back">↶</button><button class="play primary" id="play">▶</button><button class="play" id="next">↷</button><span class="grow"></span><span class="muted">Speed</span><select id="speed" style="width:78px;height:34px"><option>.25</option><option>.5</option><option selected>1</option><option>1.25</option><option>1.5</option><option>2</option></select></div>
+</div>
+
+<div class="timeline">
+<div class="row" style="justify-content:space-between;margin-bottom:9px"><b style="font-size:12px">Timeline</b><span class="muted" id="selLabel">Full video</span></div>
+<div class="track" id="track"><div class="selection" id="selection"><div class="handle lh" id="lh"></div><div class="handle rh" id="rh"></div></div><div class="head" id="head"></div></div>
+<div class="row" style="justify-content:space-between;margin-top:6px"><span class="muted" id="st">Start 00:00</span><span class="muted" id="et">End 00:00</span></div>
+<div class="actions" style="margin-top:9px"><button class="btn" id="setStart">✂ Set Start</button><button class="btn" id="setEnd">✂ Set End</button></div>
+</div>
+</main>
+
+<aside class="right">
+<div class="card">
+<h3>Text Overlay</h3>
+<input id="text" type="text" placeholder="Write text...">
+<label class="small">Size <span id="sizeVal">32px</span></label>
+<input id="size" type="range" min="14" max="80" value="32">
+<button class="btn primary" style="width:100%;margin-top:10px" id="toggleText">Add Text</button>
+</div>
+
+<div class="card">
+<h3>Filters</h3>
+<div class="grid">
+<button class="filter active" data-f="none">Original</button><button class="filter" data-f="grayscale">B&W</button>
+<button class="filter" data-f="sepia">Sepia</button><button class="filter" data-f="vintage">Vintage</button>
+<button class="filter" data-f="bright">Bright</button><button class="filter" data-f="contrast">Contrast</button>
+</div>
+</div>
+
+<div class="card">
+<h3>Transform</h3>
+<div class="actions"><button class="btn" id="rotate">↻ Rotate</button><button class="btn" id="flip">↔ Flip</button></div>
+<div class="muted" style="margin-top:9px">Transform is applied to preview and export.</div>
+</div>
+
+<div class="card">
+<h3>Export</h3>
+<label class="small">Quality</label>
+<select id="quality"><option value="2500000">Standard</option><option value="5000000" selected>High</option><option value="8000000">Very High</option></select>
+<button class="btn export" style="width:100%;margin-top:10px" id="export">⬇ Export Edited Video</button>
+<div class="muted" style="margin-top:8px">Browser export: WebM.</div>
+</div>
+</aside>
+</div>
+
+<div class="modal" id="modal"><div class="modalbox"><div class="spinner"></div><b>Rendering VEditPro video…</b><p class="muted" id="status">Please keep this page open.</p></div></div>
+
+<script>
+const $=id=>document.getElementById(id);
+const video=$('video'), file=$('videoFile'), audioFile=$('audioFile');
+let url='',duration=0,start=0,end=0,filter='none',speed=1,textOn=false,rotation=0,flipped=false,audioUrl='';
+const fmt=s=>{s=Math.max(0,Number(s)||0);return String(Math.floor(s/60)).padStart(2,'0')+':'+String(Math.floor(s%60)).padStart(2,'0')};
+function update(){
+ if(!duration)return;
+ $('total').textContent=fmt(duration); $('now').textContent=fmt(video.currentTime);
+ $('progress').value=video.currentTime/duration*100;
+ $('head').style.left=video.currentTime/duration*100+'%';
+ $('selection').style.left=start/duration*100+'%';
+ $('selection').style.width=(end-start)/duration*100+'%';
+ $('st').textContent='Start '+fmt(start); $('et').textContent='End '+fmt(end);
+ $('selLabel').textContent=fmt(end-start)+' selected';
+}
+file.onchange=()=>{const f=file.files[0];if(!f)return;if(url)URL.revokeObjectURL(url);url=URL.createObjectURL(f);video.src=url;video.load();$('empty').style.display='none';video.style.display='block';$('info').textContent=f.name;};
+video.onloadedmetadata=()=>{duration=video.duration;start=0;end=duration;$('info').innerHTML=`${file.files[0].name}<br>${video.videoWidth} × ${video.videoHeight}<br>${fmt(duration)}`;update()};
+video.ontimeupdate=()=>{if(video.currentTime>=end&&duration){video.pause();video.currentTime=end}update()};
+$('play').onclick=()=>{if(!video.src)return alert('Import a video first.');if(video.paused){if(video.currentTime<start||video.currentTime>=end)video.currentTime=start;video.play()}else video.pause()};
+$('back').onclick=()=>video.currentTime=Math.max(start,video.currentTime-5);
+$('next').onclick=()=>video.currentTime=Math.min(end,video.currentTime+5);
+$('progress').oninput=e=>{if(duration)video.currentTime=Math.max(start,Math.min(end,e.target.value/100*duration))};
+$('speed').onchange=e=>{speed=+e.target.value;video.playbackRate=speed};
+$('setStart').onclick=()=>{start=Math.max(0,Math.min(video.currentTime,end-.1));update()};
+$('setEnd').onclick=()=>{end=Math.min(duration,Math.max(video.currentTime,start+.1));update()};
+
+document.querySelectorAll('.filter').forEach(b=>b.onclick=()=>{document.querySelectorAll('.filter').forEach(x=>x.classList.remove('active'));b.classList.add('active');filter=b.dataset.f;applyFilter()});
+function filterCSS(){return{none:'none',grayscale:'grayscale(1)',sepia:'sepia(1)',vintage:'sepia(.35) contrast(1.15) saturate(.8)',bright:'brightness(1.25) saturate(1.1)',contrast:'contrast(1.4) saturate(1.1)'}[filter]}
+function applyFilter(){video.style.filter=filterCSS()}
+$('text').oninput=e=>$('overlay').textContent=e.target.value||'Your Text';
+$('size').oninput=e=>{$('sizeVal').textContent=e.target.value+'px';$('overlay').style.fontSize=e.target.value+'px'};
+$('toggleText').onclick=()=>{textOn=!textOn;$('overlay').style.display=textOn?'block':'none';$('toggleText').textContent=textOn?'Remove Text':'Add Text'};
+$('rotate').onclick=()=>{rotation=(rotation+90)%360;applyTransform()};
+$('flip').onclick=()=>{flipped=!flipped;applyTransform()};
+function applyTransform(){video.style.transform=`rotate(${rotation}deg) scaleX(${flipped?-1:1})`}
+
+audioFile.onchange=()=>{const f=audioFile.files[0];if(f){audioUrl=URL.createObjectURL(f);$('audioName').textContent=f.name}};
+
+let drag=null;
+function pointer(type,e){drag=type;e.preventDefault()}
+$('lh').onpointerdown=e=>pointer('l',e);$('rh').onpointerdown=e=>pointer('r',e);
+window.onpointermove=e=>{if(!drag||!duration)return;const r=$('track').getBoundingClientRect();const t=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width))*duration;if(drag==='l')start=Math.min(t,end-.1);else end=Math.max(t,start+.1);update()};
+window.onpointerup=()=>drag=null;
+
+$('reset').onclick=()=>{start=0;end=duration;filter='none';rotation=0;flipped=false;textOn=false;speed=1;video.playbackRate=1;video.currentTime=0;$('overlay').style.display='none';$('toggleText').textContent='Add Text';document.querySelectorAll('.filter').forEach(b=>b.classList.toggle('active',b.dataset.f==='none'));applyFilter();applyTransform();update()};
+
+async function exportVideo(){
+ if(!video.src)return alert('Import a video first.');
+ if(!window.MediaRecorder)return alert('This browser does not support video export.');
+ $('modal').classList.add('show');$('status').textContent='Preparing…';video.pause();
+ const canvas=document.createElement('canvas'),w=video.videoWidth||1280,h=video.videoHeight||720;canvas.width=w;canvas.height=h;
+ const ctx=canvas.getContext('2d'),stream=canvas.captureStream(30);
+ try{const vs=video.captureStream?video.captureStream():video.mozCaptureStream?.();vs?.getAudioTracks().forEach(t=>stream.addTrack(t))}catch(e){}
+ let mime='video/webm;codecs=vp9,opus';if(!MediaRecorder.isTypeSupported(mime))mime='video/webm;codecs=vp8,opus';if(!MediaRecorder.isTypeSupported(mime))mime='video/webm';
+ const rec=new MediaRecorder(stream,{mimeType:mime,videoBitsPerSecond:+$('quality').value}),chunks=[];rec.ondataavailable=e=>e.data.size&&chunks.push(e.data);
+ rec.onstop=()=>{const blob=new Blob(chunks,{type:mime}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download='VEditPro-Edited.webm';a.click();URL.revokeObjectURL(u);$('status').textContent='Done!';setTimeout(()=>$('modal').classList.remove('show'),600)};
+ const old=video.currentTime,oldRate=video.playbackRate;video.currentTime=start;await new Promise(r=>video.addEventListener('seeked',r,{once:true}));video.playbackRate=speed;rec.start(100);
+ function draw(){if(video.currentTime>=end||video.ended){rec.stop();video.pause();video.currentTime=old;video.playbackRate=oldRate;return}
+ ctx.save();ctx.clearRect(0,0,w,h);ctx.translate(w/2,h/2);ctx.rotate(rotation*Math.PI/180);ctx.scale(flipped?-1:1,1);ctx.filter=filterCSS();ctx.drawImage(video,-w/2,-h/2,w,h);ctx.restore();
+ if(textOn){ctx.save();ctx.font=`800 ${+$('size').value*(w/1280)}px Arial`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#fff';ctx.shadowColor='#000';ctx.shadowBlur=10;ctx.fillText($('text').value||'Your Text',w/2,h/2);ctx.restore()}
+ $('status').textContent='Rendering '+Math.round((video.currentTime-start)/(end-start)*100)+'%';requestAnimationFrame(draw)}
+ video.play();requestAnimationFrame(draw)
+}
+$('export').onclick=exportVideo;$('topExport').onclick=exportVideo;
+</script>
+</body>
+</html>
